@@ -3,44 +3,29 @@ from multiprocessing import Pool
 import pandas as pd
 import time
 
-
-# It returned nan (key error in dictionary ( when it arrived to 944))
-start_time =  time.time()
-df = pd.read_csv('companies-11-27-2024.csv')
-url_list = df['Website'].tolist()
-
-# dicto =  {url_list[i] : i for i in range(len(url_list))}
-
-
-url_list2 =  url_list[:8]
-
-
-def scrape_parallel(url):
-
-    print(url,'loaded')
-    result = crawl_and_extract(url)
-    if len(result) == 0 : 
-        print(url,'NOT ACCESSIBLE')
-    else : 
-        print(url,'SCRAPED')
-
+def scrape_parallel(args):
+    url, depth, max_sublinks = args
+    result = crawl_and_extract(url, depth, max_sublinks)
     return result
 
-num_processes = 4
+def crawl_websites(file_path, depth=1, max_sublinks=20, num_processes=4, num_urls=-1):
+    start_time = time.time()
 
+    df = pd.read_csv(file_path)
+    url_list = df['Website'].tolist()
 
-with Pool(num_processes) as pool:
-    results = pool.map(scrape_parallel, url_list2)
+    if num_urls > 0: 
+        url_list = url_list[:num_urls]
 
+    args = [(url, depth, max_sublinks) for url in url_list]
 
-    
-print(len(results))
+    with Pool(num_processes) as pool:
+        results = pool.map(scrape_parallel, args)
 
-end_time = time.time()
-# # Displaying results
-# for result in results:
-#     if result:
-#         print(result)
+    end_time = time.time()
 
-execution_time = end_time - start_time
-print(f"Execution time: {execution_time:.6f} seconds")
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time:.6f} seconds")
+    print(f"Number of results: {len(results)}")
+
+    return results

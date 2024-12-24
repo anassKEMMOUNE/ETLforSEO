@@ -76,4 +76,4 @@ def crawl_and_extract(link : str , depth = 1 , max_websites = 20) :
 
         
 
-# print(crawl_and_extract("http://'www.anuviaplantnutrients.com"))      
+  
