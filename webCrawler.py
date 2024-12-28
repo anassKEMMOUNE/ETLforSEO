@@ -60,7 +60,7 @@ def crawl_and_extract(link : str , depth = 1 , max_websites = 20) :
                         
                         keywords.extend(cleanHTML(soup)) 
                         if accessible > max_websites :
-                            return keywords
+                            return [link,keywords]
                         
                     else  :
                         if accessible == 0 and "https" not in l.url:
@@ -72,7 +72,7 @@ def crawl_and_extract(link : str , depth = 1 , max_websites = 20) :
                 except :
                     print("Website not available")
                     continue
-    return keywords
+    return [link,keywords]
 
         
 

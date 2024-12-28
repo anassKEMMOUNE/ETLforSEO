@@ -8,6 +8,9 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
   />
+  <!-- PapaParse (for client-side CSV parsing) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+
   <style>
     /* GLOBAL STYLES */
     * {
@@ -17,8 +20,8 @@
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
       color: #333;
       line-height: 1.6;
     }
@@ -30,49 +33,89 @@
       padding: 1rem 0;
       text-align: center;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      margin-bottom: 2rem;
     }
 
     header h1 {
       font-weight: 400;
       letter-spacing: 1px;
+      margin: 0;
     }
 
     /* MAIN CONTAINER */
     main {
       max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      margin: 0 auto;
+      padding: 0 1rem 2rem 1rem;
     }
 
-    /* FORM STYLES */
-    form {
+    /* FORM CONTAINER */
+    .form-container {
       background: white;
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       margin-bottom: 20px;
-      max-width: 600px;
-      margin: 0 auto 2rem auto;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .form-container h2 {
+      margin-bottom: 1rem;
+      font-weight: normal;
+      text-align: center;
+      color: #4CAF50;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .form-group {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       margin-bottom: 15px;
     }
-
     .form-group label {
-      flex: 1;
-      margin-right: 10px;
-      font-weight: bold;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 5px;
     }
-
-    .form-group input {
-      flex: 2;
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="file"],
+    .form-group textarea {
+      width: 100%;
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 5px;
+      font-size: 0.95rem;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* The container for checkboxes */
+    #checkboxContainer {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 5px;
+    }
+    #checkboxContainer label {
+      display: block;
+      margin: 5px 0;
+      font-weight: normal;
     }
 
     form button {
@@ -84,8 +127,8 @@
       cursor: pointer;
       width: 100%;
       font-size: 1rem;
+      margin-top: 10px;
     }
-
     form button:hover {
       background-color: #45a049;
     }
@@ -94,14 +137,12 @@
     #loading {
       display: none;
       text-align: center;
-      margin-top: 2rem;
+      margin: 2rem 0;
     }
-
     #loading i {
       font-size: 2rem;
       color: #4CAF50;
     }
-
     #loading p {
       margin-top: 1rem;
       font-weight: 500;
@@ -112,6 +153,8 @@
       display: none; /* Hidden by default, shown after scraping */
       gap: 20px;
       margin-bottom: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     .list-container {
@@ -122,8 +165,9 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       max-height: 400px;
       overflow-y: auto;
+      margin: 0 1rem;
+      min-width: 250px;
     }
-
     .list-container h2 {
       margin-top: 0;
       text-align: center;
@@ -135,62 +179,58 @@
     /* ANALYTICS SECTION (Initially hidden) */
     #analytics {
       display: none; /* Shown after scraping */
-      margin: 2rem auto 0 auto;
+      margin: 0 auto;
       max-width: 900px;
       background: white;
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
     #analytics h3 {
       text-align: center;
       margin-bottom: 1rem;
+      color: #4CAF50;
+      font-weight: normal;
     }
-
     #analytics p {
       font-weight: 500;
       margin-bottom: 0.5rem;
+      text-align: center;
     }
 
-    /* Make the PIE CHART smaller */
+    /* PIE CHART */
     #scrapingPieChart {
-      max-width: 300px; /* Decreased size */
+      max-width: 300px; 
       margin: 1rem auto;
       display: block;
     }
 
-    /* Container for Word Cloud and Bar Chart (Side by side, bigger) */
+    /* WORD CLOUD & BAR CHART */
     #visualContainer {
       display: flex;
       gap: 20px;
       margin-top: 1rem;
-      flex-wrap: wrap; /* In case the screen is too narrow, they wrap */
+      flex-wrap: wrap;
       justify-content: center;
     }
-
     .visual-box {
-      flex: 1 1 500px; /* Increased minimum size to make them look bigger */
+      flex: 1 1 400px; 
       display: flex;
       flex-direction: column;
       align-items: center;
+      margin-bottom: 2rem;
     }
-
     .visual-box h3 {
       margin-bottom: 0.5rem;
+      color: #333;
     }
-
-    /* Make the wordcloud bigger */
     #wordcloud {
       display: block;
       max-width: 100%;
-      /* You can set a specific width or let it scale up: e.g., max-width: 600px; */
       border: 1px solid #ddd;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    /* Bar chart is also bigger by virtue of .visual-box flex */
     #topKeywordsChart {
       max-width: 100%;
       display: block;
@@ -202,60 +242,100 @@
       list-style: none;
       padding-left: 0;
     }
-
     ul li {
       padding: 0.3rem 0;
       border-bottom: 1px solid #ddd;
       font-size: 0.95rem;
     }
-
     ul li:last-child {
       border-bottom: none;
     }
   </style>
 </head>
+
 <body>
-  <!-- HEADER -->
   <header>
-    <h1>ETL for SEO watch by Anass Kemmoune</h1>
+    <h1>ETL for SEO Watch</h1>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main>
-    <!-- SCRAPING FORM -->
-    <form id="uploadForm" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="file">Upload CSV:</label>
-        <input type="file" id="file" name="file" required />
+    <!-- FORM CONTAINER -->
+    <div class="form-container">
+      <h2>Scraping Configuration</h2>
+      <div id="errorMessage" style="display: none; margin-top: 1rem; padding: 10px; background: #ffe0e0; color: #b70000; border-radius: 5px;">
+        <!-- Error messages will appear here -->
       </div>
-      <div class="form-group">
-        <label for="depth">Depth:</label>
-        <input type="number" id="depth" name="depth" value="1" />
-      </div>
-      <div class="form-group">
-        <label for="max_sublinks">Max Sublinks:</label>
-        <input
-          type="number"
-          id="max_sublinks"
-          name="max_sublinks"
-          value="20"
-        />
-      </div>
-      <div class="form-group">
-        <label for="num_processes">Number of Processes:</label>
-        <input
-          type="number"
-          id="num_processes"
-          name="num_processes"
-          value="4"
-        />
-      </div>
-      <div class="form-group">
-        <label for="num_urls">Number of URLs:</label>
-        <input type="number" id="num_urls" name="num_urls" value="-1" />
-      </div>
-      <button type="submit">Start Scraping</button>
-    </form>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <!-- High-level choice: CSV or custom? -->
+        <div class="form-group">
+          <label>Select Source of URLs:</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="url_mode" value="csv" />
+              Upload CSV File
+            </label>
+            <label>
+              <input type="radio" name="url_mode" value="custom" />
+              Custom URLs
+            </label>
+          </div>
+        </div>
+
+        <!-- If CSV chosen, sub-choice: use all or pick some? -->
+        <div class="form-group" id="csvSubChoiceGroup" style="display: none;">
+          <label>How to use CSV?</label>
+          <div class="radio-group" id="csvSubChoiceRadio">
+            <label>
+              <input type="radio" name="url_source" value="file_all" />
+              Use all from CSV
+            </label>
+            <label>
+              <input type="radio" name="url_source" value="file_some"/>
+              Pick some from CSV
+            </label>
+          </div>
+        </div>
+
+        <!-- CSV File input (initially hidden) -->
+        <div class="form-group" id="fileInputGroup" style="display: none;">
+          <label for="file">Upload CSV (must have 'Website' column):</label>
+          <input type="file" id="file" name="file" accept=".csv" />
+        </div>
+
+        <!-- Checkbox container (shown only if "pick some" is selected) -->
+        <div class="form-group" id="checkboxContainerGroup" style="display: none;">
+          <label>Select URLs from the CSV:</label>
+          <div id="checkboxContainer"></div>
+        </div>
+
+        <!-- One multi-line input for custom URLs (only if user picks "custom") -->
+        <div class="form-group" id="customUrlsGroup" style="display: none;">
+          <label for="custom_urls">Custom URLs (one per line):</label>
+          <textarea id="custom_urls" name="custom_urls" placeholder="https://example1.com
+https://example2.com
+https://example3.com"></textarea>
+        </div>
+
+        <!-- Other scraping params -->
+        <div class="form-group">
+          <label for="depth">Depth:</label>
+          <input type="number" id="depth" name="depth" value="1" min="1"/>
+        </div>
+        <div class="form-group">
+          <label for="max_sublinks">Max Sublinks:</label>
+          <input type="number" id="max_sublinks" name="max_sublinks" value="20" min="1"/>
+        </div>
+        <div class="form-group">
+          <label for="num_processes">Number of Processes:</label>
+          <input type="number" id="num_processes" name="num_processes" value="4" min="1"/>
+        </div>
+
+        <!-- Hidden input to store the "some" selection (checkbox picks) -->
+        <input type="hidden" id="some_urls" name="some_urls" value="" />
+
+        <button type="submit">Start Scraping</button>
+      </form>
+    </div>
 
     <!-- LOADING SPINNER -->
     <div id="loading">
@@ -263,7 +343,7 @@
       <p>Scraping in progress, please wait...</p>
     </div>
 
-    <!-- SCRAPING RESULTS (Initially hidden) -->
+    <!-- SCRAPING RESULTS -->
     <div class="results">
       <div class="list-container">
         <h2>Scraped Websites</h2>
@@ -275,16 +355,16 @@
       </div>
     </div>
 
-    <!-- ANALYTICS SECTION (Initially hidden) -->
+    <!-- ANALYTICS SECTION -->
     <div id="analytics">
       <h3>Analytics</h3>
       <p id="totalScraped"></p>
       <p id="totalNotScraped"></p>
 
-      <!-- 1) PIE CHART (smaller) -->
+      <!-- Pie Chart -->
       <canvas id="scrapingPieChart" width="400" height="200"></canvas>
 
-      <!-- 2) WORD CLOUD & BAR CHART SIDE BY SIDE (bigger) -->
+      <!-- Word Cloud & Bar Chart -->
       <div id="visualContainer">
         <!-- Word Cloud -->
         <div class="visual-box">
@@ -303,114 +383,294 @@
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
+    // GLOBAL chart references to destroy them before re-creating
+    let scrapingPieChartInstance = null;
+    let topKeywordsChartInstance = null;
+  
+    // DOM references
+    const csvSubChoiceGroup = document.getElementById('csvSubChoiceGroup');
+    const fileInputGroup = document.getElementById('fileInputGroup');
+    const checkboxContainerGroup = document.getElementById('checkboxContainerGroup');
+    const checkboxContainer = document.getElementById('checkboxContainer');
+    const customUrlsGroup = document.getElementById('customUrlsGroup');
+    const someUrlsHiddenInput = document.getElementById('some_urls');
+    const fileInput = document.getElementById('file');
+  
+    // A reference to the error message container
+    const errorMessageDiv = document.getElementById('errorMessage');
+  
+    // High-level radio: CSV or custom
+    document.querySelectorAll('input[name="url_mode"]').forEach(r => {
+      r.addEventListener('change', handleUrlModeChange);
+    });
+  
+    function handleUrlModeChange() {
+      // Clear any previous error
+      hideError();
+  
+      const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
+      if (mode === 'csv') {
+        csvSubChoiceGroup.style.display = 'block';
+        fileInputGroup.style.display = 'none';
+        checkboxContainerGroup.style.display = 'none';
+        customUrlsGroup.style.display = 'none';
+        // Uncheck any leftover sub-choice
+        document.querySelectorAll('input[name="url_source"]').forEach(r => (r.checked = false));
+      } else if (mode === 'custom') {
+        csvSubChoiceGroup.style.display = 'none';
+        fileInputGroup.style.display = 'none';
+        checkboxContainerGroup.style.display = 'none';
+        customUrlsGroup.style.display = 'block';
+        document.querySelectorAll('input[name="url_source"]').forEach(r => (r.checked = false));
+      }
+    }
+  
+    // Sub-choice radio: "file_all" or "file_some"
+    document.querySelectorAll('input[name="url_source"]').forEach(radio => {
+      radio.addEventListener('change', handleCsvSubChoice);
+    });
+  
+    function handleCsvSubChoice() {
+      // Clear any previous error
+      hideError();
+  
+      const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
+      if (!subChoice) {
+        fileInputGroup.style.display = 'none';
+        checkboxContainerGroup.style.display = 'none';
+        return;
+      }
+      // Show file input
+      fileInputGroup.style.display = 'block';
+  
+      if (subChoice === 'file_some') {
+        checkboxContainerGroup.style.display = 'block';
+      } else {
+        checkboxContainerGroup.style.display = 'none';
+      }
+    }
+  
+    // On page load, ensure everything starts hidden properly
+    window.addEventListener('DOMContentLoaded', () => {
+      csvSubChoiceGroup.style.display = 'none';
+      fileInputGroup.style.display = 'none';
+      checkboxContainerGroup.style.display = 'none';
+      customUrlsGroup.style.display = 'none';
+    });
+  
+    // Parse CSV client-side when file changes, to build checkboxes
+    fileInput.addEventListener('change', () => {
+      hideError();
+      const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
+      const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
+  
+      if (mode === 'csv' && subChoice === 'file_some') {
+        const file = fileInput.files[0];
+        if (!file) {
+          checkboxContainer.innerHTML = '';
+          return;
+        }
+  
+        Papa.parse(file, {
+          header: true,
+          complete: function(results) {
+            const data = results.data;
+            if (!data.length || !('Website' in data[0])) {
+              showError('CSV must contain a "Website" column.');
+              checkboxContainer.innerHTML = '';
+              return;
+            }
+  
+            // Build checkboxes
+            let html = '';
+            data.forEach((row) => {
+              const url = row['Website'] ? row['Website'].trim() : '';
+              if (url) {
+                html += `
+                  <label>
+                    <input type="checkbox" value="${encodeURIComponent(url)}" />
+                    ${url}
+                  </label>
+                `;
+              }
+            });
+            checkboxContainer.innerHTML = html || '<p style="color:red;">No valid URLs found in CSV.</p>';
+          }
+        });
+      } else {
+        checkboxContainer.innerHTML = '';
+      }
+    });
+  
+    // Handle form submission
     document.getElementById('uploadForm').addEventListener('submit', function (e) {
       e.preventDefault();
-
-      // Show the loading animation and hide other sections
+      hideError();
+  
+      const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
+      const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
+  
+      // If "pick some" is selected, gather checked boxes
+      if (mode === 'csv' && subChoice === 'file_some') {
+        const checkedBoxes = checkboxContainer.querySelectorAll('input[type="checkbox"]:checked');
+        const selectedUrls = Array.from(checkedBoxes).map(cb => decodeURIComponent(cb.value));
+        someUrlsHiddenInput.value = selectedUrls.join('\n');
+      } else {
+        someUrlsHiddenInput.value = '';
+      }
+  
       document.getElementById('loading').style.display = 'block';
       document.querySelector('.results').style.display = 'none';
       document.getElementById('analytics').style.display = 'none';
-
+  
       const formData = new FormData(this);
-
+  
       fetch('/scrape', {
         method: 'POST',
         body: formData,
       })
-        .then(response => response.json())
-        .then(data => {
-          // Hide the loading spinner
-          document.getElementById('loading').style.display = 'none';
-
-          // Show the results section
-          document.querySelector('.results').style.display = 'flex';
-
-          // Display scraped URLs
-          const scrapedList = document.getElementById('scrapedUrls');
-          scrapedList.innerHTML = '';
-          data.scraped_urls.forEach(url => {
-            const li = document.createElement('li');
-            li.textContent = url;
-            scrapedList.appendChild(li);
+      .then(response => {
+        // If the server returns a non-2xx status, handle that
+        if (!response.ok) {
+          // Attempt to parse JSON anyway
+          return response.json().then(data => {
+            // Show error from server
+            if (data.error) {
+              showError(data.error);
+            } else {
+              showError(`Something went wrong (status ${response.status})`);
+            }
+            document.getElementById('loading').style.display = 'none';
+            // Throw to skip .then block
+            throw new Error('Non-2xx response');
           });
-
-          // Display not scraped URLs
-          const notScrapedList = document.getElementById('notScrapedUrls');
-          notScrapedList.innerHTML = '';
-          data.not_scraped_urls.forEach(url => {
-            const li = document.createElement('li');
-            li.textContent = url;
-            notScrapedList.appendChild(li);
-          });
-
-          // Show analytics section
-          document.getElementById('analytics').style.display = 'block';
-          document.getElementById('totalScraped').textContent =
-            `Total Scraped Websites: ${data.scraped_urls.length}`;
-          document.getElementById('totalNotScraped').textContent =
-            `Total Not Scraped Websites: ${data.not_scraped_urls.length}`;
-
-          // Generate Pie Chart (smaller)
-          const ctxPie = document.getElementById('scrapingPieChart').getContext('2d');
-          new Chart(ctxPie, {
-            type: 'pie',
-            data: {
-              labels: ['Scraped', 'Not Scraped'],
-              datasets: [
-                {
-                  data: [data.scraped_urls.length, data.not_scraped_urls.length],
-                  backgroundColor: ['#4CAF50', '#FF5733'],
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Hide loading
+        document.getElementById('loading').style.display = 'none';
+  
+        // If there's an error in the response, handle it
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+  
+        // Show the results section
+        document.querySelector('.results').style.display = 'flex';
+  
+        // Display scraped URLs
+        const scrapedList = document.getElementById('scrapedUrls');
+        scrapedList.innerHTML = '';
+        data.scraped_urls.forEach(url => {
+          const li = document.createElement('li');
+          li.textContent = url;
+          scrapedList.appendChild(li);
+        });
+  
+        // Display not scraped URLs
+        const notScrapedList = document.getElementById('notScrapedUrls');
+        notScrapedList.innerHTML = '';
+        data.not_scraped_urls.forEach(url => {
+          const li = document.createElement('li');
+          li.textContent = url;
+          notScrapedList.appendChild(li);
+        });
+  
+        // Show analytics section
+        document.getElementById('analytics').style.display = 'block';
+        document.getElementById('totalScraped').textContent =
+          `Total Scraped Websites: ${data.scraped_urls.length}`;
+        document.getElementById('totalNotScraped').textContent =
+          `Total Not Scraped Websites: ${data.not_scraped_urls.length}`;
+  
+        // Destroy old charts if present
+        if (scrapingPieChartInstance) {
+          scrapingPieChartInstance.destroy();
+        }
+        if (topKeywordsChartInstance) {
+          topKeywordsChartInstance.destroy();
+        }
+  
+        // Generate Pie Chart
+        const ctxPie = document.getElementById('scrapingPieChart').getContext('2d');
+        scrapingPieChartInstance = new Chart(ctxPie, {
+          type: 'pie',
+          data: {
+            labels: ['Scraped', 'Not Scraped'],
+            datasets: [
+              {
+                data: [data.scraped_urls.length, data.not_scraped_urls.length],
+                backgroundColor: ['#4CAF50', '#FF5733'],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+          },
+        });
+  
+        // Refresh Word Cloud 
+        const wordcloudImg = document.getElementById('wordcloud');
+        wordcloudImg.src = '';
+        if (data.wordcloud_url) {
+          wordcloudImg.src = data.wordcloud_url + '#' + new Date().getTime();
+        }
+  
+        // Generate Bar Chart
+        const topKeywordsCtx = document.getElementById('topKeywordsChart').getContext('2d');
+        topKeywordsChartInstance = new Chart(topKeywordsCtx, {
+          type: 'bar',
+          data: {
+            labels: data.top_keywords_labels,
+            datasets: [
+              {
+                label: 'Keyword Frequency',
+                data: data.top_keywords_counts,
+                backgroundColor: '#36A2EB',
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Frequency',
                 },
-              ],
-            },
-            options: {
-              responsive: true,
-            },
-          });
-
-          // Display the Word Cloud (bigger)
-          document.getElementById('wordcloud').src = data.wordcloud_url;
-
-          // Generate Bar Chart (bigger)
-          const topKeywordsCtx = document.getElementById('topKeywordsChart').getContext('2d');
-          new Chart(topKeywordsCtx, {
-            type: 'bar',
-            data: {
-              labels: data.top_keywords_labels,
-              datasets: [
-                {
-                  label: 'Keyword Frequency',
-                  data: data.top_keywords_counts,
-                  backgroundColor: '#36A2EB',
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Frequency',
-                  },
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Keywords',
-                  },
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Keywords',
                 },
               },
             },
-          });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('loading').style.display = 'none';
+          },
         });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Hide loading if something unexpected happens
+        document.getElementById('loading').style.display = 'none';
+      });
     });
+  
+    // Helper: show/hide error
+    function showError(msg) {
+      errorMessageDiv.innerText = msg;
+      errorMessageDiv.style.display = 'block';
+    }
+    function hideError() {
+      errorMessageDiv.style.display = 'none';
+      errorMessageDiv.innerText = '';
+    }
   </script>
+  
 </body>
 </html>
