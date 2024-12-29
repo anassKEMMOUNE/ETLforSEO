@@ -37,6 +37,8 @@ def crawl_websites(websites, depth=1, max_sublinks=20, num_processes=4):
     df =  pd.DataFrame.from_dict(dicto)
     print(df)
     res = [results[i][1] for i in range(len(results))]
+    df.to_csv("static/output.csv", index=False)
+    print(f"Results saved to output.csv ")
 
-    return res
+    return res,df
  

@@ -4,40 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ETL for SEOr</title>
+  
+  <!-- Google Font: Montserrat (example) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" />
+
+  <!-- Font Awesome -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
   />
+
   <!-- PapaParse (for client-side CSV parsing) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 
   <style>
-    /* GLOBAL STYLES */
+    /* GLOBAL RESETS & FONTS */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'Montserrat', sans-serif;
       background: #f0f2f5;
       color: #333;
       line-height: 1.6;
     }
 
-    /* HEADER STYLES */
+    /* HEADER */
     header {
-      background: linear-gradient(to right, #4CAF50, #45a049);
+      background: linear-gradient(135deg, #4caf50, #45a049);
       color: white;
-      padding: 1rem 0;
+      padding: 1.5rem 0;
       text-align: center;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.15);
       margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
     }
-
     header h1 {
-      font-weight: 400;
+      font-weight: 600;
+      font-size: 2rem;
       letter-spacing: 1px;
       margin: 0;
     }
@@ -46,27 +56,30 @@
     main {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 1rem 2rem 1rem;
+      padding: 0 1rem 3rem;
     }
 
     /* FORM CONTAINER */
     .form-container {
-      background: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      margin-bottom: 2rem;
       max-width: 700px;
       margin: 0 auto;
+      transition: box-shadow 0.3s ease;
     }
-
+    .form-container:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
     .form-container h2 {
       margin-bottom: 1rem;
-      font-weight: normal;
+      font-weight: 600;
       text-align: center;
-      color: #4CAF50;
+      color: #4caf50;
+      font-size: 1.4rem;
     }
-
     .radio-group {
       display: flex;
       gap: 15px;
@@ -78,32 +91,41 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      font-weight: 500;
     }
-
     .form-group {
       margin-bottom: 15px;
     }
     .form-group label {
       font-weight: 500;
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
+      color: #555;
     }
     .form-group input[type="text"],
     .form-group input[type="number"],
     .form-group input[type="file"],
     .form-group textarea {
       width: 100%;
-      padding: 10px;
+      padding: 0.75rem;
       border: 1px solid #ddd;
-      border-radius: 5px;
+      border-radius: 6px;
       font-size: 0.95rem;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group input[type="file"]:focus,
+    .form-group textarea:focus {
+      border-color: #4caf50;
     }
     textarea {
       resize: vertical;
       min-height: 80px;
     }
 
-    /* The container for checkboxes */
+    /* CHECKBOX CONTAINER */
     #checkboxContainer {
       padding: 10px;
       border: 1px solid #ddd;
@@ -116,21 +138,36 @@
       display: block;
       margin: 5px 0;
       font-weight: normal;
+      color: #444;
     }
 
-    form button {
-      background-color: #4CAF50;
+    /* BUTTONS */
+    form button,
+    #searchButton {
+      background-color: #4caf50;
       color: white;
       border: none;
-      padding: 12px 20px;
+      padding: 0.75rem 1.25rem;
       border-radius: 5px;
       cursor: pointer;
-      width: 100%;
       font-size: 1rem;
+      font-weight: 600;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       margin-top: 10px;
+      width: 100%;
     }
-    form button:hover {
-      background-color: #45a049;
+    form button:hover,
+    #searchButton:hover {
+      background-color: #43a047;
+      transform: translateY(-2px);
+    }
+    form button:active,
+    #searchButton:active {
+      background-color: #388e3c;
+      transform: scale(0.98);
     }
 
     /* LOADING SPINNER */
@@ -141,28 +178,34 @@
     }
     #loading i {
       font-size: 2rem;
-      color: #4CAF50;
+      color: #4caf50;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     #loading p {
       margin-top: 1rem;
       font-weight: 500;
+      color: #666;
     }
 
     /* RESULTS SECTION */
     .results {
-      display: none; /* Hidden by default, shown after scraping */
+      display: none;
       gap: 20px;
       margin-bottom: 2rem;
       justify-content: center;
       flex-wrap: wrap;
+      margin-top : 30px;
     }
-
     .list-container {
       flex: 1;
       background: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
       max-height: 400px;
       overflow-y: auto;
       margin: 0 1rem;
@@ -174,33 +217,49 @@
       font-size: 1.2rem;
       margin-bottom: 1rem;
       color: #333;
+      font-weight: 600;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    ul li:last-child {
+      border-bottom: none;
     }
 
-    /* ANALYTICS SECTION (Initially hidden) */
+    /* ANALYTICS SECTION */
     #analytics {
-      display: none; /* Shown after scraping */
+      display: none;
       margin: 0 auto;
       max-width: 900px;
       background: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     }
     #analytics h3 {
       text-align: center;
       margin-bottom: 1rem;
-      color: #4CAF50;
-      font-weight: normal;
+      color: #4caf50;
+      font-weight: 600;
+      font-size: 1.4rem;
     }
     #analytics p {
       font-weight: 500;
       margin-bottom: 0.5rem;
       text-align: center;
+      color: #555;
     }
 
     /* PIE CHART */
     #scrapingPieChart {
-      max-width: 300px; 
+      max-width: 300px;
       margin: 1rem auto;
       display: block;
     }
@@ -214,22 +273,33 @@
       justify-content: center;
     }
     .visual-box {
-      flex: 1 1 400px; 
+      flex: 1 1 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin-bottom: 2rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      transition: box-shadow 0.3s ease;
+    }
+    .visual-box:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .visual-box h3 {
       margin-bottom: 0.5rem;
       color: #333;
+      font-size: 1.2rem;
+      font-weight: 600;
     }
     #wordcloud {
       display: block;
       max-width: 100%;
       border: 1px solid #ddd;
       border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-top: 0.5rem;
     }
     #topKeywordsChart {
       max-width: 100%;
@@ -237,36 +307,104 @@
       margin: 1rem auto 0 auto;
     }
 
-    /* LISTS */
-    ul {
-      list-style: none;
+    /* KEYWORD SEARCH SECTION */
+    #keywordSearchContainer {
+      display: none;
+      background: #fff;
+      margin: 2rem auto 0;
+      max-width: 700px;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    #keywordSearchContainer h3 {
+      margin-top: 0;
+      color: #4caf50;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    /* SEARCH RESULTS */
+    #searchResults {
+      margin: 2rem auto 0;
+      max-width: 700px;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: none;
+    }
+    #searchResults h4 {
+      margin-top: 0;
+      color: #333;
+      font-weight: 600;
+    }
+    #searchResultsList {
+      list-style-type: none;
       padding-left: 0;
+      margin-top: 1rem;
     }
-    ul li {
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #ddd;
+    #searchResultsList li {
+      border-bottom: 1px solid #eee;
+      padding: 0.5rem 0;
       font-size: 0.95rem;
+      color: #444;
     }
-    ul li:last-child {
+    #searchResultsList li:last-child {
       border-bottom: none;
+    }
+
+    /* NOTIFICATION BOX (for fancy errors, etc.) */
+    #notificationBox {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      min-width: 280px;
+      background: #ffdddd;
+      color: #b70000;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 9999;
+      font-weight: 500;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #notificationBox.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #notificationBox.hide {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    #notificationBox i {
+      margin-right: 8px;
     }
   </style>
 </head>
 
 <body>
+  <!-- NOTIFICATION BOX -->
+  <div id="notificationBox"></div>
+
   <header>
-    <h1>ETL for SEO Watch</h1>
+    <h1>ETL for SEO Watch by Anass KEMMOUNE</h1>
   </header>
 
   <main>
-    <!-- FORM CONTAINER -->
+    <!-- SCRAPING FORM -->
     <div class="form-container">
       <h2>Scraping Configuration</h2>
-      <div id="errorMessage" style="display: none; margin-top: 1rem; padding: 10px; background: #ffe0e0; color: #b70000; border-radius: 5px;">
-        <!-- Error messages will appear here -->
-      </div>
+      
+      <!-- We won't rely on this old errorMessageDiv, we have fancy notifications now -->
+      <!-- <div id="errorMessage" style="display: none; ..."></div> -->
+
       <form id="uploadForm" enctype="multipart/form-data">
-        <!-- High-level choice: CSV or custom? -->
+        <!-- Existing scraping config radio / CSV / custom -->
         <div class="form-group">
           <label>Select Source of URLs:</label>
           <div class="radio-group">
@@ -281,7 +419,6 @@
           </div>
         </div>
 
-        <!-- If CSV chosen, sub-choice: use all or pick some? -->
         <div class="form-group" id="csvSubChoiceGroup" style="display: none;">
           <label>How to use CSV?</label>
           <div class="radio-group" id="csvSubChoiceRadio">
@@ -296,19 +433,16 @@
           </div>
         </div>
 
-        <!-- CSV File input (initially hidden) -->
         <div class="form-group" id="fileInputGroup" style="display: none;">
           <label for="file">Upload CSV (must have 'Website' column):</label>
           <input type="file" id="file" name="file" accept=".csv" />
         </div>
 
-        <!-- Checkbox container (shown only if "pick some" is selected) -->
         <div class="form-group" id="checkboxContainerGroup" style="display: none;">
           <label>Select URLs from the CSV:</label>
           <div id="checkboxContainer"></div>
         </div>
 
-        <!-- One multi-line input for custom URLs (only if user picks "custom") -->
         <div class="form-group" id="customUrlsGroup" style="display: none;">
           <label for="custom_urls">Custom URLs (one per line):</label>
           <textarea id="custom_urls" name="custom_urls" placeholder="https://example1.com
@@ -316,7 +450,6 @@ https://example2.com
 https://example3.com"></textarea>
         </div>
 
-        <!-- Other scraping params -->
         <div class="form-group">
           <label for="depth">Depth:</label>
           <input type="number" id="depth" name="depth" value="1" min="1"/>
@@ -330,16 +463,14 @@ https://example3.com"></textarea>
           <input type="number" id="num_processes" name="num_processes" value="4" min="1"/>
         </div>
 
-        <!-- Hidden input to store the "some" selection (checkbox picks) -->
         <input type="hidden" id="some_urls" name="some_urls" value="" />
-
         <button type="submit">Start Scraping</button>
       </form>
     </div>
 
     <!-- LOADING SPINNER -->
     <div id="loading">
-      <i class="fas fa-spinner fa-spin"></i>
+      <i class="fas fa-spinner"></i>
       <p>Scraping in progress, please wait...</p>
     </div>
 
@@ -364,32 +495,54 @@ https://example3.com"></textarea>
       <!-- Pie Chart -->
       <canvas id="scrapingPieChart" width="400" height="200"></canvas>
 
-      <!-- Word Cloud & Bar Chart -->
+      <!-- Word Cloud, Bar Chart, Topic Modeling -->
       <div id="visualContainer">
-        <!-- Word Cloud -->
         <div class="visual-box">
           <h3>Word Cloud</h3>
           <img id="wordcloud" src="" alt="Word Cloud" />
         </div>
-
-        <!-- Bar Chart -->
         <div class="visual-box">
           <h3>Top Keywords</h3>
           <canvas id="topKeywordsChart" width="400" height="200"></canvas>
         </div>
+        <div class="visual-box">
+          <h3>Topic Modeling</h3>
+          <div id="topicModelingResults"></div>
+        </div>
+      </div>
+
+      <!-- KEYWORD SEARCH -->
+      <div id="keywordSearchContainer">
+        <h3>Keyword Search in output.csv</h3>
+        <div class="form-group">
+          <label for="searchKeyword">Enter Keyword:</label>
+          <input type="text" id="searchKeyword" placeholder="e.g. seo, python, blog, etc." />
+        </div>
+        <button id="searchButton">Search</button>
+      </div>
+
+      <!-- SEARCH RESULTS -->
+      <div id="searchResults">
+        <h4>Search Results</h4>
+        <ul id="searchResultsList"></ul>
       </div>
     </div>
   </main>
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script>
-    // GLOBAL chart references to destroy them before re-creating
+    /* ~~~~~~~~~~~~~~~~~~~~~~
+       GLOBAL VARIABLES
+    ~~~~~~~~~~~~~~~~~~~~~~~ */
     let scrapingPieChartInstance = null;
     let topKeywordsChartInstance = null;
-  
-    // DOM references
+    let parsedOutputData = [];
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~
+       DOM REFERENCES
+    ~~~~~~~~~~~~~~~~~~~~~~~ */
+    const notificationBox = document.getElementById('notificationBox');
     const csvSubChoiceGroup = document.getElementById('csvSubChoiceGroup');
     const fileInputGroup = document.getElementById('fileInputGroup');
     const checkboxContainerGroup = document.getElementById('checkboxContainerGroup');
@@ -397,26 +550,40 @@ https://example3.com"></textarea>
     const customUrlsGroup = document.getElementById('customUrlsGroup');
     const someUrlsHiddenInput = document.getElementById('some_urls');
     const fileInput = document.getElementById('file');
-  
-    // A reference to the error message container
-    const errorMessageDiv = document.getElementById('errorMessage');
-  
-    // High-level radio: CSV or custom
+    const loadingDiv = document.getElementById('loading');
+
+    // Keyword Search
+    const keywordSearchContainer = document.getElementById('keywordSearchContainer');
+    const searchKeywordInput = document.getElementById('searchKeyword');
+    const searchButton = document.getElementById('searchButton');
+    const searchResultsDiv = document.getElementById('searchResults');
+    const searchResultsList = document.getElementById('searchResultsList');
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~
+       EVENT LISTENERS
+    ~~~~~~~~~~~~~~~~~~~~~~~ */
     document.querySelectorAll('input[name="url_mode"]').forEach(r => {
       r.addEventListener('change', handleUrlModeChange);
     });
-  
+    document.querySelectorAll('input[name="url_source"]').forEach(radio => {
+      radio.addEventListener('change', handleCsvSubChoice);
+    });
+    fileInput.addEventListener('change', handleCsvFileChanged);
+    document.getElementById('uploadForm').addEventListener('submit', handleScrapingForm);
+    searchButton.addEventListener('click', handleSearchClick);
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~
+       FUNCTIONS
+    ~~~~~~~~~~~~~~~~~~~~~~~ */
+
     function handleUrlModeChange() {
-      // Clear any previous error
-      hideError();
-  
+      hideNotification();
       const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
       if (mode === 'csv') {
         csvSubChoiceGroup.style.display = 'block';
         fileInputGroup.style.display = 'none';
         checkboxContainerGroup.style.display = 'none';
         customUrlsGroup.style.display = 'none';
-        // Uncheck any leftover sub-choice
         document.querySelectorAll('input[name="url_source"]').forEach(r => (r.checked = false));
       } else if (mode === 'custom') {
         csvSubChoiceGroup.style.display = 'none';
@@ -426,64 +593,42 @@ https://example3.com"></textarea>
         document.querySelectorAll('input[name="url_source"]').forEach(r => (r.checked = false));
       }
     }
-  
-    // Sub-choice radio: "file_all" or "file_some"
-    document.querySelectorAll('input[name="url_source"]').forEach(radio => {
-      radio.addEventListener('change', handleCsvSubChoice);
-    });
-  
+
     function handleCsvSubChoice() {
-      // Clear any previous error
-      hideError();
-  
+      hideNotification();
       const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
       if (!subChoice) {
         fileInputGroup.style.display = 'none';
         checkboxContainerGroup.style.display = 'none';
         return;
       }
-      // Show file input
       fileInputGroup.style.display = 'block';
-  
       if (subChoice === 'file_some') {
         checkboxContainerGroup.style.display = 'block';
       } else {
         checkboxContainerGroup.style.display = 'none';
       }
     }
-  
-    // On page load, ensure everything starts hidden properly
-    window.addEventListener('DOMContentLoaded', () => {
-      csvSubChoiceGroup.style.display = 'none';
-      fileInputGroup.style.display = 'none';
-      checkboxContainerGroup.style.display = 'none';
-      customUrlsGroup.style.display = 'none';
-    });
-  
-    // Parse CSV client-side when file changes, to build checkboxes
-    fileInput.addEventListener('change', () => {
-      hideError();
+
+    function handleCsvFileChanged() {
+      hideNotification();
       const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
       const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
-  
       if (mode === 'csv' && subChoice === 'file_some') {
         const file = fileInput.files[0];
         if (!file) {
           checkboxContainer.innerHTML = '';
           return;
         }
-  
         Papa.parse(file, {
           header: true,
           complete: function(results) {
             const data = results.data;
             if (!data.length || !('Website' in data[0])) {
-              showError('CSV must contain a "Website" column.');
+              showNotification('CSV must contain a "Website" column.', true);
               checkboxContainer.innerHTML = '';
               return;
             }
-  
-            // Build checkboxes
             let html = '';
             data.forEach((row) => {
               const url = row['Website'] ? row['Website'].trim() : '';
@@ -502,17 +647,16 @@ https://example3.com"></textarea>
       } else {
         checkboxContainer.innerHTML = '';
       }
-    });
-  
-    // Handle form submission
-    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+    }
+
+    function handleScrapingForm(e) {
       e.preventDefault();
-      hideError();
-  
+      hideNotification();
+      
       const mode = document.querySelector('input[name="url_mode"]:checked')?.value;
       const subChoice = document.querySelector('input[name="url_source"]:checked')?.value;
-  
-      // If "pick some" is selected, gather checked boxes
+
+      // Gather "some" URLs
       if (mode === 'csv' && subChoice === 'file_some') {
         const checkedBoxes = checkboxContainer.querySelectorAll('input[type="checkbox"]:checked');
         const selectedUrls = Array.from(checkedBoxes).map(cb => decodeURIComponent(cb.value));
@@ -520,82 +664,67 @@ https://example3.com"></textarea>
       } else {
         someUrlsHiddenInput.value = '';
       }
-  
-      document.getElementById('loading').style.display = 'block';
+
+      loadingDiv.style.display = 'block';
       document.querySelector('.results').style.display = 'none';
       document.getElementById('analytics').style.display = 'none';
-  
-      const formData = new FormData(this);
-  
+
+      const formData = new FormData(e.target);
+
       fetch('/scrape', {
         method: 'POST',
         body: formData,
       })
       .then(response => {
-        // If the server returns a non-2xx status, handle that
         if (!response.ok) {
-          // Attempt to parse JSON anyway
           return response.json().then(data => {
-            // Show error from server
             if (data.error) {
-              showError(data.error);
+              showNotification(data.error, true);
             } else {
-              showError(`Something went wrong (status ${response.status})`);
+              showNotification(`Something went wrong (status ${response.status})`, true);
             }
-            document.getElementById('loading').style.display = 'none';
-            // Throw to skip .then block
+            loadingDiv.style.display = 'none';
             throw new Error('Non-2xx response');
           });
         }
         return response.json();
       })
       .then(data => {
-        // Hide loading
-        document.getElementById('loading').style.display = 'none';
-  
-        // If there's an error in the response, handle it
+        loadingDiv.style.display = 'none';
         if (data.error) {
-          showError(data.error);
+          showNotification(data.error, true);
           return;
         }
-  
-        // Show the results section
+        // Show the results
         document.querySelector('.results').style.display = 'flex';
-  
-        // Display scraped URLs
         const scrapedList = document.getElementById('scrapedUrls');
+        const notScrapedList = document.getElementById('notScrapedUrls');
         scrapedList.innerHTML = '';
+        notScrapedList.innerHTML = '';
+
         data.scraped_urls.forEach(url => {
           const li = document.createElement('li');
           li.textContent = url;
           scrapedList.appendChild(li);
         });
-  
-        // Display not scraped URLs
-        const notScrapedList = document.getElementById('notScrapedUrls');
-        notScrapedList.innerHTML = '';
         data.not_scraped_urls.forEach(url => {
           const li = document.createElement('li');
           li.textContent = url;
           notScrapedList.appendChild(li);
         });
-  
-        // Show analytics section
-        document.getElementById('analytics').style.display = 'block';
+
+        // Show analytics
+        const analytics = document.getElementById('analytics');
+        analytics.style.display = 'block';
         document.getElementById('totalScraped').textContent =
           `Total Scraped Websites: ${data.scraped_urls.length}`;
         document.getElementById('totalNotScraped').textContent =
           `Total Not Scraped Websites: ${data.not_scraped_urls.length}`;
-  
-        // Destroy old charts if present
-        if (scrapingPieChartInstance) {
-          scrapingPieChartInstance.destroy();
-        }
-        if (topKeywordsChartInstance) {
-          topKeywordsChartInstance.destroy();
-        }
-  
-        // Generate Pie Chart
+
+        if (scrapingPieChartInstance) scrapingPieChartInstance.destroy();
+        if (topKeywordsChartInstance) topKeywordsChartInstance.destroy();
+
+        // Pie Chart
         const ctxPie = document.getElementById('scrapingPieChart').getContext('2d');
         scrapingPieChartInstance = new Chart(ctxPie, {
           type: 'pie',
@@ -608,19 +737,17 @@ https://example3.com"></textarea>
               },
             ],
           },
-          options: {
-            responsive: true,
-          },
+          options: { responsive: true },
         });
-  
-        // Refresh Word Cloud 
+
+        // Word Cloud
         const wordcloudImg = document.getElementById('wordcloud');
         wordcloudImg.src = '';
         if (data.wordcloud_url) {
           wordcloudImg.src = data.wordcloud_url + '#' + new Date().getTime();
         }
-  
-        // Generate Bar Chart
+
+        // Top Keywords Bar Chart
         const topKeywordsCtx = document.getElementById('topKeywordsChart').getContext('2d');
         topKeywordsChartInstance = new Chart(topKeywordsCtx, {
           type: 'bar',
@@ -639,38 +766,123 @@ https://example3.com"></textarea>
             scales: {
               y: {
                 beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Frequency',
-                },
+                title: { display: true, text: 'Frequency' },
               },
               x: {
-                title: {
-                  display: true,
-                  text: 'Keywords',
-                },
+                title: { display: true, text: 'Keywords' },
               },
             },
           },
         });
+
+        // Topic Modeling
+        const tmContainer = document.getElementById('topicModelingResults');
+        tmContainer.innerHTML = '';
+        if (data.topics && data.topics.length > 0) {
+          data.topics.forEach(topicObj => {
+            const p = document.createElement('p');
+            p.textContent = `Topic ${topicObj.topic_number}: ${topicObj.words.join(', ')}`;
+            tmContainer.appendChild(p);
+          });
+        }
+
+        // LOAD output.csv (assuming /static/output.csv) for keyword search
+        Papa.parse('/static/output.csv', {
+          download: true,
+          header: true,
+          complete: function(results) {
+            if (results.data && results.data.length) {
+              parsedOutputData = results.data;
+              // Show the keyword search container
+              keywordSearchContainer.style.display = 'block';
+            } else {
+              showNotification('No data found in output.csv.', true);
+            }
+          }
+        });
       })
-      .catch(error => {
-        console.error('Error:', error);
-        // Hide loading if something unexpected happens
-        document.getElementById('loading').style.display = 'none';
+      .catch(err => {
+        console.error('Error:', err);
       });
-    });
-  
-    // Helper: show/hide error
-    function showError(msg) {
-      errorMessageDiv.innerText = msg;
-      errorMessageDiv.style.display = 'block';
     }
-    function hideError() {
-      errorMessageDiv.style.display = 'none';
-      errorMessageDiv.innerText = '';
+
+    function handleSearchClick() {
+      hideNotification();
+      const keyword = searchKeywordInput.value.trim().toLowerCase();
+      if (!keyword) {
+        showNotification('Please enter a keyword to search.', true);
+        return;
+      }
+      if (!parsedOutputData.length) {
+        showNotification('No data available from output.csv.', true);
+        return;
+      }
+
+      // Clear old results
+      searchResultsDiv.style.display = 'none';
+      searchResultsList.innerHTML = '';
+
+      let matchCount = 0;
+      parsedOutputData.forEach(row => {
+        const url = row.urls;
+        const keywordsString = row.keywords;
+        if (!keywordsString) return;
+
+        let dict;
+        try {
+          dict = JSON.parse(keywordsString);
+        } catch (err) {
+          return;
+        }
+        if (dict.hasOwnProperty(keyword)) {
+          matchCount++;
+          const li = document.createElement('li');
+          li.textContent = `${url} => ${keyword} : ${dict[keyword]}`;
+          searchResultsList.appendChild(li);
+        }
+      });
+
+      if (matchCount > 0) {
+        searchResultsDiv.style.display = 'block';
+      } else {
+        showNotification(`No URLs found containing keyword "${keyword}".`, true);
+      }
+    }
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~
+       FANCY NOTIFICATION
+    ~~~~~~~~~~~~~~~~~~~~~~~ */
+    let hideTimeout = null;
+    function showNotification(message, isError = false) {
+      clearTimeout(hideTimeout);
+      notificationBox.textContent = '';
+      notificationBox.classList.remove('hide');
+      
+      if (isError) {
+        notificationBox.style.background = '#ffdddd';
+        notificationBox.style.color = '#b70000';
+        notificationBox.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+      } else {
+        notificationBox.style.background = '#ddffdd';
+        notificationBox.style.color = '#006600';
+        notificationBox.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+      }
+      notificationBox.classList.add('show');
+
+      // Auto-hide after 5 seconds
+      hideTimeout = setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+    function hideNotification() {
+      if (!notificationBox.classList.contains('show')) return;
+      notificationBox.classList.remove('show');
+      notificationBox.classList.add('hide');
+      setTimeout(() => {
+        notificationBox.classList.remove('hide');
+        notificationBox.style.display = 'none';
+      }, 500);
     }
   </script>
-  
 </body>
 </html>

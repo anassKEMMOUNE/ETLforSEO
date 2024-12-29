@@ -6,6 +6,10 @@ from wordcloud import WordCloud
 import io
 import base64
 
+# Topic modeling imports
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -77,7 +81,7 @@ def scrape():
         })
 
     # --- Now we do the crawling via parallel.py ---
-    results = crawl_websites(
+    results, df = crawl_websites(
         websites=list_of_urls,
         depth=depth,
         max_sublinks=max_sublinks,
@@ -95,6 +99,31 @@ def scrape():
 
     # Flatten keywords
     keywords = [k.strip() for sublist in results for k in sublist]
+
+    # -------------------
+    #  TOPIC MODELING
+    # -------------------
+    topic_modeling_data = []
+    num_topics = 3  # Tweak as needed
+    if keywords:
+        # Vectorize the keywords
+        vectorizer = CountVectorizer(stop_words='english')
+        dtm = vectorizer.fit_transform(keywords)
+
+        # Fit an LDA model
+        lda = LatentDirichletAllocation(n_components=num_topics, random_state=42)
+        lda.fit(dtm)
+
+        # Extract top words per topic
+        feature_names = vectorizer.get_feature_names_out()
+        n_top_words = 3  # Number of words to display per topic
+        for topic_idx, topic_components in enumerate(lda.components_):
+            top_indices = topic_components.argsort()[::-1][:n_top_words]
+            top_words = [feature_names[i] for i in top_indices]
+            topic_modeling_data.append({
+                'topic_number': topic_idx + 1,
+                'words': top_words
+            })
 
     # Generate a word cloud
     wordcloud_url = ""
@@ -119,7 +148,9 @@ def scrape():
         'scraped_urls': scraped_urls,
         'not_scraped_urls': not_scraped_urls,
         'top_keywords_labels': top_keywords_labels,
-        'top_keywords_counts': top_keywords_counts
+        'top_keywords_counts': top_keywords_counts,
+        # Include the topic modeling results
+        'topics': topic_modeling_data
     })
 
 if __name__ == "__main__":
